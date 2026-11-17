@@ -1,0 +1,28 @@
+[Unit]
+Description=pfhop - Postfix relay management panel
+After=network-online.target postfix.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pfhop
+Group=pfhop
+Environment=PFHOP_CONFIG=/etc/pfhop/pfhop.conf
+Environment=LANG=C.UTF-8
+Environment=PYTHONUNBUFFERED=1
+WorkingDirectory=@APP_DIR@
+ExecStart=@APP_DIR@/venv/bin/python -m pfhop serve
+Restart=on-failure
+RestartSec=3
+
+# Hardening. The root helper (run via sudo) inherits this sandbox and must be
+# able to edit /etc/postfix later, so ProtectSystem / NoNewPrivileges stay off;
+# privilege is limited by the sudoers whitelist instead.
+ProtectHome=true
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+
+[Install]
+WantedBy=multi-user.target

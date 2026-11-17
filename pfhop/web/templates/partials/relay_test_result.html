@@ -1,0 +1,18 @@
+{% if error %}
+<div class="flash error">{{ error }}</div>
+{% elif result %}
+<div class="test-summary {{ 'ok' if result.ok else 'fail' }}">
+  {% if result.ok %}✓ {{ relay.name }} {{ 'accepted and delivered the test e-mail' if sent else 'accepted the sender and recipient' }}
+  {% else %}✗ Test failed{% endif %}
+</div>
+<ol class="test-steps">
+  {% for s in result.steps %}
+  <li class="{{ s.status }}">
+    <span class="step-icon">{{ {'ok': '✓', 'warn': '!', 'fail': '✗', 'skip': '–'}[s.status] }}</span>
+    <span class="step-name">{{ s.name }}</span>
+    <span class="step-ms">{{ s.ms }} ms</span>
+    <div class="step-detail">{{ s.detail }}</div>
+  </li>
+  {% endfor %}
+</ol>
+{% endif %}

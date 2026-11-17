@@ -1,0 +1,44 @@
+{% extends "config_base.html" %}
+{% block config_content %}
+<section class="card">
+  <div class="card-head"><h2>{{ 'Activate relay management' if first_takeover else 'Review &amp; apply relay / client changes' }}</h2></div>
+  {% if first_takeover %}
+  <div class="notice">
+    <strong>First apply:</strong> pfhop will take over the Postfix routing configuration. Your current setup was imported
+    (relays, sender rules, allowed networks) and mail will be routed exactly as before, but the settings move to
+    pfhop-managed files: <code>/etc/postfix/pfhop/</code> and a marked block in <code>master.cf</code>.
+    The old <code>sender_transport</code> file is left untouched (no longer used).
+  </div>
+  {% endif %}
+  {% if changes %}
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>What</th><th>Current</th><th>New</th></tr></thead>
+      <tbody>
+      {% for c in changes %}
+        <tr><td><code>{{ c.what }}</code></td><td class="val pre">{{ c.old }}</td><td class="val pre new">{{ c.new }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="muted small">On apply: files and parameters are written, <code>postfix check</code> runs and Postfix is reloaded.
+    If anything fails, the previous configuration is restored automatically.</p>
+  {% if user.is_admin %}
+  <div class="actions">
+    <form method="post" action="/routing/apply" data-confirm="Apply {{ changes | length }} change(s) to Postfix and reload it?">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <button class="btn primary" type="submit">{{ 'Activate' if first_takeover else 'Apply ' ~ (changes | length) ~ ' change' ~ ('s' if changes | length != 1 else '') }}</button>
+    </form>
+    <a class="btn" href="/config/relays">Back</a>
+    <form method="post" action="/routing/discard" data-confirm="Throw away your edits and re-import relays and allowed clients from the current Postfix configuration? Relay names, descriptions and rules you added in pfhop will be lost.">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <button class="btn danger" type="submit" title="Undo edits made in pfhop by reading the live Postfix configuration again">Re-import from Postfix</button>
+    </form>
+  </div>
+  {% endif %}
+  {% else %}
+  <p>✓ Postfix already matches the configuration in pfhop. Nothing to apply.</p>
+  <a class="btn" href="/config/relays">Back</a>
+  {% endif %}
+</section>
+{% endblock %}

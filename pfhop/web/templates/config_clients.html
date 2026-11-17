@@ -1,0 +1,49 @@
+{% extends "config_base.html" %}
+{% block config_content %}
+{% set editable = user.is_admin %}
+{% include "partials/pending_banner.html" %}
+<section class="card">
+  <div class="card-head"><h2>Allowed clients <span class="muted small">(mynetworks – may relay mail without authentication)</span></h2></div>
+  <div class="table-wrap">
+    <table class="dense">
+      <thead><tr><th>Network</th><th>Description</th><th class="right">Mails today</th><th>Hosts seen</th><th>Last mail</th>{% if editable %}<th></th>{% endif %}</tr></thead>
+      <tbody>
+      {% for c in clients %}
+        {% set u = usage.get(c.network, {}) %}
+        <tr>
+          <td class="mono">{{ c.network }}</td>
+          <td>
+            {% if editable %}
+            <form method="post" action="/config/clients/{{ c.id }}/update" class="inline-form desc-form">
+              <input type="hidden" name="csrf" value="{{ csrf }}">
+              <input type="text" name="description" value="{{ c.description }}" placeholder="add a description…" maxlength="200">
+              <button class="btn sm" type="submit">Save</button>
+            </form>
+            {% else %}{{ c.description }}{% endif %}
+          </td>
+          <td class="right num">{{ u.get('today', 0) }}</td>
+          <td class="right">{{ u.get('hosts', 0) }}</td>
+          <td class="nowrap">{{ u.get('last') | ago if u.get('last') else '-' }}</td>
+          {% if editable %}
+          <td class="right">
+            <form method="post" action="/config/clients/{{ c.id }}/delete" data-confirm="Remove {{ c.network }}? Hosts in it will no longer be allowed to relay.">
+              <input type="hidden" name="csrf" value="{{ csrf }}"><button class="iconbtn del" type="submit" title="Remove">{{ ui.icon('trash') }}</button>
+            </form>
+          </td>
+          {% endif %}
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if editable %}
+  <form method="post" action="/config/clients/new" class="inline-form section-gap">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <input type="text" name="network" placeholder="10.1.2.0/24 or 10.1.2.3" required>
+    <input type="text" name="description" placeholder="description (optional)">
+    <button class="btn primary" type="submit">Add network</button>
+  </form>
+  <p class="muted small">Description changes are stored in pfhop only. Adding or removing networks becomes active after <em>Review &amp; apply</em>.</p>
+  {% endif %}
+</section>
+{% endblock %}

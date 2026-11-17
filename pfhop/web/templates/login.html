@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign in · pfhop</title>
+  <link rel="stylesheet" href="/static/app.css?v={{ version }}">
+</head>
+<body>
+<div class="login-wrap">
+  <div class="login-box">
+    <div class="card">
+      <div class="brand">pfhop</div>
+      <p class="muted" style="margin-top:2px">{{ title }}</p>
+      {% for kind, msg in flashes %}<div class="flash {{ kind }}">{{ msg }}</div>{% endfor %}
+      {% if no_users %}
+      <div class="notice">No users exist yet. Create the first admin on the server:<br>
+        <code>pfhop useradd admin --role admin</code></div>
+      {% endif %}
+      <form method="post" action="/login">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <input type="hidden" name="next" value="{{ next }}">
+        <div class="field">
+          <label for="username">Username</label>
+          <input id="username" name="username" type="text" autocomplete="username" autofocus required>
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" autocomplete="current-password" required>
+        </div>
+        <button class="btn primary" type="submit" style="width:100%;justify-content:center">Sign in</button>
+      </form>
+    </div>
+  </div>
+</div>
+</body>
+</html>

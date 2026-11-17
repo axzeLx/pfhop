@@ -1,0 +1,13 @@
+{% if not managed %}
+<div class="pending-banner info">
+  <span><strong>Relay management is not active yet.</strong>
+    The relays and networks below were imported from your current Postfix configuration, which keeps working unchanged.
+    When you activate, pfhop takes over routing (mail flows exactly as now) and changes you make here can be applied.</span>
+  <a class="btn sm primary" href="/routing/review">Review &amp; activate →</a>
+</div>
+{% elif pending %}
+<div class="pending-banner">
+  <span><strong>{{ pending }} pending change{{ 's' if pending != 1 }}</strong> – saved in pfhop but not yet active in Postfix.</span>
+  <a class="btn sm primary" href="/routing/review">Review &amp; apply →</a>
+</div>
+{% endif %}

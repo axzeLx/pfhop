@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Users{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Users</h1></div>
+
+<section class="card" style="margin-bottom:16px">
+  <div class="card-head"><h2>Accounts</h2></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>User</th><th>Role</th><th>Status</th><th>Last login</th><th></th></tr></thead>
+      <tbody>
+      {% for u in users %}
+        <tr>
+          <td><strong>{{ u.username }}</strong>{% if u.id == user.id %} <span class="muted small">(you)</span>{% endif %}
+            <div class="muted small">{{ u.full_name }}{% if u.full_name and u.email %} · {% endif %}{{ u.email }}</div></td>
+          <td><span class="tag {{ 'admin' if u.is_admin }}">{{ u.role }}</span></td>
+          <td>{% if u.is_active %}<span class="pill ok">Active</span>{% else %}<span class="pill neutral">Disabled</span>{% endif %}</td>
+          <td class="nowrap">{{ u.last_login | ago }}</td>
+          <td>
+            <details class="inline">
+              <summary>Edit</summary>
+              <form method="post" action="/users/{{ u.id }}/update" style="margin-bottom:10px">
+                <input type="hidden" name="csrf" value="{{ csrf }}">
+                <div class="inline-form" style="margin-bottom:6px">
+                  <input type="text" name="full_name" value="{{ u.full_name }}" placeholder="Full name">
+                  <input type="text" name="email" value="{{ u.email }}" placeholder="E-mail">
+                </div>
+                <div class="inline-form">
+                  <select name="role">
+                    <option value="viewer" {{ 'selected' if u.role == 'viewer' }}>viewer</option>
+                    <option value="admin" {{ 'selected' if u.role == 'admin' }}>admin</option>
+                  </select>
+                  <label style="margin:0;font-weight:normal"><input type="checkbox" name="is_active" value="1" {{ 'checked' if u.is_active }}> active</label>
+                  <button class="btn sm" type="submit">Save</button>
+                </div>
+              </form>
+              <form method="post" action="/users/{{ u.id }}/password" class="inline-form" style="margin-bottom:10px">
+                <input type="hidden" name="csrf" value="{{ csrf }}">
+                <input type="password" name="password" placeholder="New password (min {{ min_len }})" minlength="{{ min_len }}" autocomplete="new-password" required>
+                <button class="btn sm" type="submit">Set password</button>
+              </form>
+              {% if u.id != user.id %}
+              <form method="post" action="/users/{{ u.id }}/delete" data-confirm="Delete user {{ u.username }}?">
+                <input type="hidden" name="csrf" value="{{ csrf }}">
+                <button class="btn sm danger" type="submit">Delete user</button>
+              </form>
+              {% endif %}
+            </details>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="card" style="max-width:720px">
+  <div class="card-head"><h2>Add user</h2></div>
+  <form method="post" action="/users">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <div class="grid grid-2">
+      <div class="field"><label for="nu">Username</label><input id="nu" name="username" type="text" pattern="[A-Za-z0-9._\-]{3,32}" required></div>
+      <div class="field"><label for="nr">Role</label>
+        <select id="nr" name="role"><option value="viewer">viewer (read-only)</option><option value="admin">admin</option></select></div>
+      <div class="field"><label for="nf">Full name</label><input id="nf" name="full_name" type="text"></div>
+      <div class="field"><label for="ne">E-mail</label><input id="ne" name="email" type="email"></div>
+      <div class="field"><label for="np">Password</label><input id="np" name="password" type="password" minlength="{{ min_len }}" autocomplete="new-password" required>
+        <div class="help">At least {{ min_len }} characters.</div></div>
+    </div>
+    <button class="btn primary" type="submit">Create user</button>
+  </form>
+</section>
+{% endblock %}

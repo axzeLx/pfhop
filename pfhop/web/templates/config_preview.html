@@ -1,0 +1,29 @@
+{% extends "config_base.html" %}
+{% block config_content %}
+<section class="card">
+  <div class="card-head"><h2>Review changes – {{ tabs[tab] }}</h2></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Setting</th><th>Current</th><th></th><th>New</th></tr></thead>
+      <tbody>
+      {% for c in changes %}
+        <tr>
+          <td>{{ c.fv.field.label }}<div class="pname">{{ c.fv.name }}</div></td>
+          <td class="val">{{ c.fv.display or '(empty)' }}{% if c.fv.field.type == 'size_mb' %} MB{% elif c.fv.field.type == 'size_kb' %} KB{% endif %}</td>
+          <td>→</td>
+          <td class="val new">{{ c.new_display }}{% if c.new is not none and c.fv.field.type == 'size_mb' %} MB{% elif c.new is not none and c.fv.field.type == 'size_kb' %} KB{% endif %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="muted small">On apply: main.cf is updated, <code>postfix check</code> runs and Postfix is reloaded.
+    If anything fails, the previous configuration is restored automatically.</p>
+  <form method="post" action="/config/{{ tab }}/apply" class="actions">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    {% for c in changes %}<input type="hidden" name="p:{{ c.fv.name }}" value="{{ c.new if c.new is not none else '__default__' }}">{% endfor %}
+    <button class="btn primary" type="submit">Apply {{ changes | length }} change{{ 's' if changes | length != 1 }}</button>
+    <a class="btn" href="/config/{{ tab }}">Cancel</a>
+  </form>
+</section>
+{% endblock %}

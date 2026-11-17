@@ -1,0 +1,16 @@
+{% import "macros.html" as ui %}
+{% for r in recent %}
+<tr>
+  <td class="nowrap">{{ r.ts | ts('%d.%m %H:%M:%S') }}</td>
+  <td class="mono"><a href="/logs?q={{ r.queue_id }}">{{ r.queue_id }}</a></td>
+  <td class="ellipsis" title="{{ r.sender or '' }}">{{ ui.addr(r.sender) }}</td>
+  <td class="ellipsis" title="{{ r.recipient }}">{{ r.recipient or '-' }}</td>
+  {% set rl = ridx.for_delivery(r.transport, r.relay) %}
+  <td class="ellipsis small" title="{{ r.relay }}">{% if rl %}<span class="relay-name">{{ rl.name }}</span>{% else %}{{ (r.relay or '-').split('[')[0] }}{% endif %}</td>
+  <td class="right nowrap">{{ '%.1f' % r.delay if r.delay is not none else '-' }}s</td>
+  <td>{{ ui.status_pill(r.status) }}</td>
+  <td class="reason"><div class="clamp" data-key="d-{{ r.id }}" title="Click to show / hide the full text">{{ r.response }}</div></td>
+</tr>
+{% else %}
+<tr><td colspan="8" class="empty">No outgoing e-mail recorded yet.</td></tr>
+{% endfor %}

@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Logs{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Outgoing e-mail log</h1>
+  <span class="muted small">{{ '{:,}'.format(total) }} result{{ 's' if total != 1 }}</span>
+</div>
+
+<section class="card section-gap">
+  <form method="get" action="/logs" class="filters">
+    <div class="field"><label for="f-q">Search</label>
+      <input id="f-q" type="search" name="q" value="{{ f.q }}" placeholder="address, queue ID, message-id, response"></div>
+    <div class="field"><label for="f-s">From</label>
+      <input id="f-s" type="text" name="sender" value="{{ f.sender }}" placeholder="sender contains…"></div>
+    <div class="field"><label for="f-r">To</label>
+      <input id="f-r" type="text" name="recipient" value="{{ f.recipient }}" placeholder="recipient contains…"></div>
+    <div class="field"><label for="f-ip">Client IP / host</label>
+      <input id="f-ip" type="text" name="ip" value="{{ f.ip }}" placeholder="e.g. 10.16.11."></div>
+    <div class="field"><label for="f-st">Status</label>
+      <select id="f-st" name="status">
+        <option value="">any</option>
+        {% for s in statuses %}<option value="{{ s }}" {{ 'selected' if f.status == s }}>{{ s }}</option>{% endfor %}
+      </select></div>
+    <div class="field"><label for="f-rl">Relay</label>
+      <input id="f-rl" type="text" name="relay" value="{{ f.relay }}" placeholder="relay contains…"></div>
+    <div class="field"><label for="f-pd">Date</label>
+      <select id="f-pd" name="period" data-period-select>
+        {% for v, label in periods %}<option value="{{ v }}" {{ 'selected' if f.period == v }}>{{ label }}</option>{% endfor %}
+      </select>
+      {% if f.range_label %}<div class="help">{{ f.range_label }}</div>{% endif %}</div>
+    <div class="field" data-custom-range {{ 'hidden' if f.period != 'custom' }}><label for="f-df">Date from</label>
+      <input id="f-df" type="datetime-local" name="date_from" value="{{ f.date_from }}" {{ 'disabled' if f.period != 'custom' }}></div>
+    <div class="field" data-custom-range {{ 'hidden' if f.period != 'custom' }}><label for="f-dt">Date to</label>
+      <input id="f-dt" type="datetime-local" name="date_to" value="{{ f.date_to }}" {{ 'disabled' if f.period != 'custom' }}></div>
+    <div class="filter-actions">
+      <button class="btn primary" type="submit">Search</button>
+      <a class="btn" href="/logs">Reset</a>
+    </div>
+  </form>
+  {% for e in f.errors %}<div class="flash error">{{ e }}</div>{% endfor %}
+</section>
+
+<section class="card">
+  <div class="table-wrap">
+    <table class="dense">
+      <thead><tr>
+        <th>Time</th><th>Queue ID</th><th>Client</th><th>From</th><th>To</th><th>Relay</th>
+        <th class="right">Delay</th><th>Status</th><th>Response</th>
+      </tr></thead>
+      <tbody>
+      {% for r in rows %}
+        <tr>
+          <td class="nowrap">{{ r.ts | ts('%Y-%m-%d %H:%M:%S') }}</td>
+          <td class="mono"><a href="/logs?q={{ r.queue_id }}">{{ r.queue_id }}</a></td>
+          <td class="nowrap small">{% if r.client_ip %}<a href="/logs?ip={{ r.client_ip }}">{{ r.client_ip }}</a>{% else %}<span class="muted">{{ r.client_host or '-' }}</span>{% endif %}</td>
+          <td class="ellipsis" title="{{ r.sender or '' }}">{{ ui.addr(r.sender) }}</td>
+          <td class="ellipsis" title="{{ r.recipient }}">{{ r.recipient or '-' }}</td>
+          {% set rl = ridx.for_delivery(r.transport, r.relay) %}
+          <td class="ellipsis small" title="{{ r.relay }}">{% if rl %}<span class="relay-name">{{ rl.name }}</span>{% else %}{{ (r.relay or '-').split('[')[0] }}{% endif %}</td>
+          <td class="right nowrap">{{ '%.1f' % r.delay if r.delay is not none else '-' }}s</td>
+          <td>{{ ui.status_pill(r.status) }}</td>
+          <td class="reason"><div class="clamp" data-key="d-{{ r.id }}" title="Click to show / hide the full text">{{ r.response }}</div></td>
+        </tr>
+      {% else %}
+        <tr><td colspan="9" class="empty">No matching e-mails.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if pages > 1 %}
+  <nav class="pager">
+    {% set base = params %}
+    {% if page > 1 %}<a class="btn sm" href="/logs?{{ dict(base, page=1) | urlencode }}">« First</a>
+      <a class="btn sm" href="/logs?{{ dict(base, page=page-1) | urlencode }}">‹ Prev</a>{% endif %}
+    <span class="muted small">Page {{ page }} of {{ pages }}</span>
+    {% if page < pages %}<a class="btn sm" href="/logs?{{ dict(base, page=page+1) | urlencode }}">Next ›</a>
+      <a class="btn sm" href="/logs?{{ dict(base, page=pages) | urlencode }}">Last »</a>{% endif %}
+  </nav>
+  {% endif %}
+</section>
+{% endblock %}

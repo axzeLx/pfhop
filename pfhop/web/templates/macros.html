@@ -1,0 +1,66 @@
+{# Shared UI macros. Import with: {% import "macros.html" as ui %} #}
+
+{% macro icon(name) -%}
+{%- if name == 'play' -%}
+<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M4 2.5v11a.5.5 0 0 0 .77.42l8.5-5.5a.5.5 0 0 0 0-.84l-8.5-5.5A.5.5 0 0 0 4 2.5z"/></svg>
+{%- elif name == 'trash' -%}
+<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M6 1.5h4a.5.5 0 0 1 .5.5v1H14a.5.5 0 0 1 0 1h-.6l-.8 10a1 1 0 0 1-1 .9H4.4a1 1 0 0 1-1-.9l-.8-10H2a.5.5 0 0 1 0-1h3.5V2a.5.5 0 0 1 .5-.5zm.5 1.5h3v-.5h-3V3zm-.75 3a.5.5 0 0 0-.5.53l.4 6a.5.5 0 1 0 1-.06l-.4-6A.5.5 0 0 0 5.75 6zm4.5 0a.5.5 0 0 0-.5.47l-.4 6a.5.5 0 1 0 1 .06l.4-6a.5.5 0 0 0-.5-.53z"/></svg>
+{%- elif name == 'pause' -%}
+<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M4.5 2h2a.5.5 0 0 1 .5.5v11a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5zm5 0h2a.5.5 0 0 1 .5.5v11a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5z"/></svg>
+{%- elif name == 'release' -%}
+<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M8 1.5a6.5 6.5 0 1 1 0 13 6.5 6.5 0 0 1 0-13zM6.5 5.2v5.6a.4.4 0 0 0 .6.34l4.4-2.8a.4.4 0 0 0 0-.68L7.1 4.86a.4.4 0 0 0-.6.34z"/></svg>
+{%- elif name == 'reload' -%}
+<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M8 2.5a5.5 5.5 0 0 1 5.24 3.8.6.6 0 1 1-1.14.37A4.3 4.3 0 1 0 12.3 9a.6.6 0 1 1 1.18.24A5.5 5.5 0 1 1 8 2.5zm4.9-.4a.6.6 0 0 1 .6.6v3a.6.6 0 0 1-.6.6h-3a.6.6 0 0 1 0-1.2h2.4V2.7a.6.6 0 0 1 .6-.6z"/></svg>
+{%- elif name == 'flush' -%}
+<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M1.5 3.5l6 4.5-6 4.5v-9zm7 0l6 4.5-6 4.5v-9z"/></svg>
+{%- elif name == 'dashboard' -%}
+<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M2 2h5v6H2V2zm7 0h5v3H9V2zM2 10h5v4H2v-4zm7-3h5v7H9V7z"/></svg>
+{%- elif name == 'queue' -%}
+<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M3 2h10a1 1 0 0 1 1 1v3H2V3a1 1 0 0 1 1-1zm-1 5h12v2H2V7zm0 3h12v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-3zm4 1v1h4v-1H6z"/></svg>
+{%- elif name == 'logs' -%}
+<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M2 3h2v2H2V3zm4 .25h8v1.5H6v-1.5zM2 7h2v2H2V7zm4 .25h8v1.5H6v-1.5zM2 11h2v2H2v-2zm4 .25h8v1.5H6v-1.5z"/></svg>
+{%- elif name == 'reports' -%}
+<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M2 13.5h12V15H2v-1.5zM3 8h2.2v4.5H3V8zm3.9-4h2.2v8.5H6.9V4zm3.9 2.5H13v6h-2.2v-6z"/></svg>
+{%- elif name == 'config' -%}
+<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M2 3.25h6.2a2 2 0 0 1 3.6 0H14v1.5h-2.2a2 2 0 0 1-3.6 0H2v-1.5zm0 4h1.2a2 2 0 0 1 3.6 0H14v1.5H6.8a2 2 0 0 1-3.6 0H2v-1.5zm0 4h7.2a2 2 0 0 1 3.6 0H14v1.5h-1.2a2 2 0 0 1-3.6 0H2v-1.5z"/></svg>
+{%- elif name == 'backups' -%}
+<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M1.5 2.5h13v3h-13v-3zm1 4h11V13a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1V6.5zm3.5 2v1.5h4V8.5H6z"/></svg>
+{%- elif name == 'users' -%}
+<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M6 2.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zm5 1a2 2 0 1 1 0 4 2 2 0 0 1 0-4zM1 13c0-2.5 2.2-4.2 5-4.2s5 1.7 5 4.2v.5H1V13zm11 .5V13c0-1.3-.5-2.4-1.3-3.2 2.3-.1 4.3 1.2 4.3 3.2v.5h-3z"/></svg>
+{%- elif name == 'audit' -%}
+<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M8 1l5.5 2v4.2c0 3.3-2.3 6.3-5.5 7.3-3.2-1-5.5-4-5.5-7.3V3L8 1zm2.6 4.6L7.3 8.9 5.6 7.2 4.5 8.3l2.8 2.8 4.4-4.4-1.1-1.1z"/></svg>
+{%- elif name == 'settings' -%}
+<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M6.9 1h2.2l.4 1.9c.4.2.8.4 1.2.7l1.8-.6 1.1 1.9-1.4 1.3a5 5 0 0 1 0 1.4l1.4 1.3-1.1 1.9-1.8-.6c-.4.3-.8.5-1.2.7L9.1 15H6.9l-.4-1.9c-.4-.2-.8-.4-1.2-.7l-1.8.6-1.1-1.9 1.4-1.3a5 5 0 0 1 0-1.4L2.4 5.1l1.1-1.9 1.8.6c.4-.3.8-.5 1.2-.7L6.9 1zM8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/></svg>
+{%- elif name == 'user' -%}
+<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M8 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6zm-5.5 12c0-2.8 2.5-4.6 5.5-4.6s5.5 1.8 5.5 4.6v.5h-11V14z"/></svg>
+{%- elif name == 'logout' -%}
+<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M2 2.5A1.5 1.5 0 0 1 3.5 1H9v1.5H3.5v11H9V15H3.5A1.5 1.5 0 0 1 2 13.5v-11zm9.2 2.3L14.4 8l-3.2 3.2-1.06-1.06 1.39-1.39H6v-1.5h5.53L10.14 5.86 11.2 4.8z"/></svg>
+{%- elif name == 'chevron' -%}
+<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M10.3 2.7l1.06 1.06L7.12 8l4.24 4.24-1.06 1.06L5 8l5.3-5.3z"/></svg>
+{%- elif name == 'restart' -%}
+<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M8 1a.6.6 0 0 1 .6.6v5.8a.6.6 0 0 1-1.2 0V1.6A.6.6 0 0 1 8 1zM4.6 3.3a.6.6 0 0 1-.06.85 5 5 0 1 0 6.92 0 .6.6 0 1 1 .8-.9 6.2 6.2 0 1 1-8.52 0 .6.6 0 0 1 .86.05z"/></svg>
+{%- endif -%}
+{%- endmacro %}
+
+{% macro status_pill(status) -%}
+{%- set cls = {'sent': 'ok', 'deferred': 'warn', 'bounced': 'crit', 'expired': 'crit',
+               'discarded': 'neutral', 'active': 'info', 'hold': 'neutral', 'incoming': 'neutral',
+               'maildrop': 'neutral', 'partial': 'warn', 'deleted': 'neutral'}.get(status, 'neutral') -%}
+<span class="pill {{ cls }}">{{ status }}</span>
+{%- endmacro %}
+
+{% macro addr(a) -%}
+{%- if a is none -%}<span class="muted">-</span>
+{%- elif a == '' -%}<span class="muted">&lt;&gt; (bounce)</span>
+{%- else -%}{{ a }}{%- endif -%}
+{%- endmacro %}
+
+{# Small POST form button for one queue message. #}
+{% macro qbtn(action, qid, label, icon_name, csrf, next, cls='', confirm='') -%}
+<form method="post" action="/actions/queue/{{ action }}" class="iconform"{% if confirm %} data-confirm="{{ confirm }}"{% endif %}>
+  <input type="hidden" name="csrf" value="{{ csrf }}">
+  <input type="hidden" name="id" value="{{ qid }}">
+  <input type="hidden" name="next" value="{{ next }}">
+  <button type="submit" class="iconbtn {{ cls }}" title="{{ label }}" aria-label="{{ label }}">{{ icon(icon_name) }}</button>
+</form>
+{%- endmacro %}

@@ -1,0 +1,49 @@
+{% extends "config_base.html" %}
+{% block config_content %}
+{% set editable = user.is_admin %}
+<form method="post" action="/config/{{ tab }}/preview" class="card params-form">
+  <input type="hidden" name="csrf" value="{{ csrf }}">
+  <p class="muted small" style="margin-top:0">
+    Changes are shown for review before they are applied. Leave a field <strong>empty</strong> to return to the Postfix default.
+    <span class="tag">set</span> = explicitly configured in main.cf.
+  </p>
+  <div class="param-grid">
+  {% for v in values %}
+    {% set f = v.field %}
+    <div class="param">
+      <label for="p-{{ v.name }}">{{ f.label }}
+        {% if v.is_set %}<span class="tag">set</span>{% endif %}
+      </label>
+      <div class="param-input">
+        {% if f.type == 'bool' %}
+          <select id="p-{{ v.name }}" name="{{ v.name }}" {{ 'disabled' if not editable }}>
+            <option value="yes" {{ 'selected' if v.display == 'yes' }}>yes</option>
+            <option value="no" {{ 'selected' if v.display == 'no' }}>no</option>
+            {% if v.display not in ('yes', 'no') %}<option value="{{ v.display }}" selected>{{ v.display }}</option>{% endif %}
+          </select>
+        {% elif f.type == 'choice' %}
+          <select id="p-{{ v.name }}" name="{{ v.name }}" {{ 'disabled' if not editable }}>
+            {% for o in f.options %}<option value="{{ o }}" {{ 'selected' if v.display == o }}>{{ o }}</option>{% endfor %}
+            {% if v.display not in f.options %}<option value="{{ v.display }}" selected>{{ v.display }}</option>{% endif %}
+          </select>
+        {% else %}
+          <input id="p-{{ v.name }}" name="{{ v.name }}" value="{{ v.display }}" type="text"
+                 {% if f.type in ('int', 'size_mb', 'size_kb') %}inputmode="decimal" class="short"{% elif f.type == 'time' %}class="short"{% endif %}
+                 {{ 'disabled' if not editable }}>
+          {% if f.type == 'size_mb' %}<span class="unit">MB</span>{% elif f.type == 'size_kb' %}<span class="unit">KB</span>{% endif %}
+        {% endif %}
+      </div>
+      <div class="help">{{ f.help }}
+        <span class="pname" title="Postfix parameter">{{ v.name }}</span>
+        {% if v.display != v.default %}<span class="muted">· default: {{ v.default or '(empty)' }}</span>{% endif %}
+      </div>
+    </div>
+  {% endfor %}
+  </div>
+  {% if editable %}
+  <div class="form-actions"><button class="btn primary" type="submit">Review changes →</button></div>
+  {% else %}
+  <p class="muted small">Read-only (admin role required).</p>
+  {% endif %}
+</form>
+{% endblock %}

@@ -1,0 +1,90 @@
+<!doctype html>
+{% import "macros.html" as ui %}
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf }}">
+  <meta name="htmx-config" content='{"includeIndicatorStyles": false}'>
+  <title>{% block title %}{% endblock %} · {{ title }}</title>
+  <link rel="stylesheet" href="/static/app.css?v={{ version }}">
+  <script src="/static/htmx.min.js?v=2.0.4" defer></script>
+  <script src="/static/app.js?v={{ version }}" defer></script>
+</head>
+<body class="{{ 'sb-collapsed' if sidebar_collapsed }}">
+{% macro navlink(href, label, icon_name) -%}
+  <a href="{{ href }}" title="{{ label }}" class="{{ 'active' if (path == href or (href != '/' and path.startswith(href))) else '' }}"><span class="nav-ico">{{ ui.icon(icon_name) }}</span><span class="nav-txt">{{ label }}</span></a>
+{%- endmacro %}
+
+<header class="topbar">
+  <div class="tb-left">
+    <a href="/" class="tb-title">{{ title }}</a>
+    <div class="tb-sub">
+      {{ header.hostname }}{% if header.ip %} · {{ header.ip }}{% endif %}{% if header.postfix_version %} · Postfix v{{ header.postfix_version }}{% endif %}
+    </div>
+  </div>
+  {% if user and user.is_admin %}
+  <div class="tb-actions">
+    <form method="post" action="/actions/service/reload" data-confirm="Reload the Postfix configuration?">
+      <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="next" value="{{ path }}">
+      <button class="btn" type="submit" title="postfix reload">{{ ui.icon('reload') }} Reload</button>
+    </form>
+    <form method="post" action="/actions/queue/flush" data-confirm="Try to deliver all queued messages now?">
+      <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="next" value="{{ path }}">
+      <button class="btn" type="submit" title="postqueue -f">{{ ui.icon('flush') }} Flush queue</button>
+    </form>
+    <form method="post" action="/actions/service/restart" data-confirm="Restart the Postfix service? Connections in progress will be interrupted.">
+      <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="next" value="{{ path }}">
+      <button class="btn warn" type="submit" title="systemctl restart postfix">{{ ui.icon('restart') }} Restart</button>
+    </form>
+  </div>
+  {% endif %}
+</header>
+
+<div class="layout">
+  <aside class="sidebar">
+    <button type="button" id="sb-toggle" class="sb-toggle" title="Collapse / expand menu" aria-label="Collapse or expand menu">
+      <span class="nav-ico">{{ ui.icon('chevron') }}</span><span class="nav-txt">Collapse</span>
+    </button>
+    <nav class="nav">
+      {{ navlink('/', 'Dashboard', 'dashboard') }}
+      {{ navlink('/queue', 'Queue', 'queue') }}
+      {{ navlink('/logs', 'Logs', 'logs') }}
+      {{ navlink('/reports', 'Reports', 'reports') }}
+      <div class="section"><span class="nav-txt">Postfix</span></div>
+      {{ navlink('/config', 'Configuration', 'config') }}
+      <div class="section"><span class="nav-txt">Administration</span></div>
+      {% if user and user.is_admin %}
+      {{ navlink('/backups', 'Backups', 'backups') }}
+      {{ navlink('/users', 'Users', 'users') }}
+      {{ navlink('/audit', 'Audit log', 'audit') }}
+      {% endif %}
+      {{ navlink('/settings', 'Settings', 'settings') }}
+    </nav>
+    <div class="foot">
+      {% if user %}
+      <a href="/account" class="foot-link" title="My account: {{ user.username }} ({{ user.role }})">
+        <span class="nav-ico">{{ ui.icon('user') }}</span>
+        <span class="nav-txt">{{ user.username }} <span class="tag {{ 'admin' if user.is_admin }}">{{ user.role }}</span></span>
+      </a>
+      <form method="post" action="/logout">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <button type="submit" class="foot-link" title="Sign out">
+          <span class="nav-ico">{{ ui.icon('logout') }}</span><span class="nav-txt">Sign out</span>
+        </button>
+      </form>
+      {% endif %}
+      <div class="muted small nav-txt version">pfhop v{{ version }}</div>
+    </div>
+  </aside>
+  <main class="main">
+    {% for kind, msg in flashes %}<div class="flash {{ kind }}">{{ msg }}</div>{% endfor %}
+    {% if collector_age is none or collector_age > 120 %}
+    <div class="notice">The mail log collector is not running{% if collector_age %} (last seen {{ collector_age | duration(true) }} ago){% endif %}.
+      Today's numbers, recent e-mails and logs are not being updated. Check <code>systemctl status pfhop-collector</code>.</div>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+</div>
+</body>
+</html>

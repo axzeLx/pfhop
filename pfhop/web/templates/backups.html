@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Backups{% endblock %}
+
+{% macro backup_section(kind, title, description, items, button) %}
+<section class="card" style="margin-bottom:16px">
+  <div class="card-head"><h2>{{ title }}</h2></div>
+  <p class="muted" style="margin-top:0">{{ description }}</p>
+  <form method="post" action="/backups/{{ kind }}" class="inline-form" style="margin-bottom:14px">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <input type="text" name="note" maxlength="200" placeholder="Note (optional), e.g. before changing mynetworks">
+    <button class="btn primary" type="submit">{{ button }}</button>
+  </form>
+  {% if items %}
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>File</th><th>Created</th><th>By</th><th class="right">Size</th><th>Note</th><th></th></tr></thead>
+      <tbody>
+      {% for b in items %}
+        <tr>
+          <td class="mono small">{{ b.filename }}<div class="muted" title="SHA-256">sha256 {{ b.sha256[:16] }}…</div></td>
+          <td class="nowrap">{{ b.created_at | ts }}</td>
+          <td>{% if b.created_by == 'scheduler' %}<span class="tag">auto</span>{% else %}{{ b.created_by }}{% endif %}</td>
+          <td class="right nowrap">{{ b.size | filesize }}</td>
+          <td>{{ b.note }}</td>
+          <td>
+            <div class="actions">
+              <a class="btn sm" href="/backups/{{ b.id }}/download">Download</a>
+              <form method="post" action="/backups/{{ b.id }}/delete" data-confirm="Delete {{ b.filename }}?">
+                <input type="hidden" name="csrf" value="{{ csrf }}">
+                <button class="btn sm danger" type="submit">Delete</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="muted">No backups yet.</p>
+  {% endif %}
+</section>
+{% endmacro %}
+
+{% block content %}
+<div class="page-head">
+  <h1>Backups</h1>
+  <span class="muted small">Stored on the server in <code>{{ backup_dir }}</code></span>
+</div>
+
+<div class="card section-gap" style="margin-bottom:16px">
+  {% if settings['backup.auto_enabled'] %}
+    <span class="pill ok">Automatic backup on</span>
+    Every day at <strong>{{ settings['backup.auto_time'] }}</strong> both backups below are taken automatically;
+    the newest <strong>{{ settings['backup.auto_keep'] }}</strong> automatic backups of each type are kept.
+    Manual backups are never deleted automatically.
+  {% else %}
+    <span class="pill neutral">Automatic backup off</span> Only manual backups are taken.
+  {% endif %}
+  <a href="/settings" class="small">Change in Settings →</a>
+</div>
+
+{{ backup_section('postfix', 'Postfix configuration',
+   'Archives the whole Postfix configuration directory (main.cf, master.cf, maps such as sender_transport) plus postconf -n / -M output into a .tar.gz file.',
+   postfix_backups, 'Back up Postfix config') }}
+
+{{ backup_section('app', 'pfhop settings',
+   'Exports this panel\'s own configuration (settings and user accounts, with password hashes) into a .json file. Keep it somewhere safe.',
+   app_backups, 'Back up pfhop settings') }}
+{% endblock %}

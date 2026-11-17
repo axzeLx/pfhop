@@ -1,0 +1,11 @@
+[Unit]
+Description=pfhop - scheduled backup of Postfix and pfhop settings
+
+[Service]
+Type=oneshot
+User=pfhop
+Group=pfhop
+Environment=PFHOP_CONFIG=/etc/pfhop/pfhop.conf
+Environment=LANG=C.UTF-8
+WorkingDirectory=@APP_DIR@
+ExecStart=@APP_DIR@/venv/bin/python -m pfhop backup --auto

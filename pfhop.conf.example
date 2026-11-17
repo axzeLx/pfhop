@@ -1,0 +1,24 @@
+# pfhop configuration - copy to /etc/pfhop/pfhop.conf (install.sh does this).
+# Settings that admins change at runtime (thresholds, report recipients, ...)
+# are stored in the database and edited from the web UI, not here.
+
+[server]
+host = "127.0.0.1"          # keep on localhost; nginx terminates TLS in front
+port = 8000
+trusted_proxies = ["127.0.0.1", "::1"]
+
+[paths]
+data_dir = "/var/lib/pfhop" # database and backups
+maillog = "/var/log/maillog"
+
+[security]
+secret_key = "CHANGE-ME"    # install.sh generates a random one
+session_hours = 8           # sessions expire after this many hours
+cookie_secure = true        # requires HTTPS (nginx)
+# Optional extra allow-list inside the app (nginx already restricts access):
+# allowed_networks = ["10.0.0.0/8", "192.168.0.0/16"]
+allowed_networks = []
+
+[postfix]
+helper = "/usr/libexec/pfhop/pfhop-helper"
+use_sudo = true

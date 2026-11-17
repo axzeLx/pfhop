@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Queue{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Mail queue <span class="muted small">{{ qtotal }} message{{ 's' if qtotal != 1 }}</span></h1>
+  <div class="actions">
+    <input type="search" placeholder="Filter: sender, recipient, ID, reason…" data-filter="#qtable" style="width:280px">
+    <select data-status-filter="#qtable" aria-label="Status filter">
+      <option value="">All statuses</option>
+      <option value="active">active</option>
+      <option value="deferred">deferred</option>
+      <option value="hold">hold</option>
+      <option value="incoming">incoming</option>
+    </select>
+  </div>
+</div>
+
+<section class="card">
+  {% if user.is_admin %}
+  <form id="bulk" method="post" action="/actions/queue/retry" class="bulkbar" data-confirm-bulk>
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <input type="hidden" name="next" value="/queue">
+    <span class="muted small"><span id="selcount">0</span> selected</span>
+    <button class="btn sm" type="submit" formaction="/actions/queue/retry">{{ ui.icon('play') }} Send now</button>
+    <button class="btn sm" type="submit" formaction="/actions/queue/hold">{{ ui.icon('pause') }} Hold</button>
+    <button class="btn sm" type="submit" formaction="/actions/queue/release">{{ ui.icon('release') }} Release</button>
+    <button class="btn sm danger" type="submit" formaction="/actions/queue/delete" data-confirm-delete>{{ ui.icon('trash') }} Delete</button>
+    <span class="spacer"></span>
+    <button class="btn sm primary" type="submit" formaction="/actions/queue/flush" formnovalidate data-flush>{{ ui.icon('flush') }} Retry all now</button>
+  </form>
+  {% endif %}
+  <div class="scroll tall">
+    <table class="dense" id="qtable">
+      <thead><tr>
+        {% if user.is_admin %}<th><input type="checkbox" id="selall" aria-label="select all"></th>{% endif %}
+        <th>Queue ID</th><th>Status</th><th>Arrived</th><th class="right">Size</th>
+        <th>From</th><th>To</th><th>Relay</th><th>Reason</th>{% if user.is_admin %}<th class="right">Action</th>{% endif %}
+      </tr></thead>
+      <tbody hx-get="/partials/queue-rows?full=1" hx-trigger="every {{ refresh }}s" hx-swap="innerHTML" data-pause-on-select>
+        {% include "partials/queue_rows.html" %}
+      </tbody>
+    </table>
+  </div>
+  <p class="muted small">Auto-refreshes every {{ refresh }}s (paused while messages are selected). Times are server local time.</p>
+</section>
+{% endblock %}

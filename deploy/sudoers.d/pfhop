@@ -1,0 +1,4 @@
+# pfhop may run ONLY its whitelisted helper as root (with any arguments;
+# the helper validates every sub-command and argument itself).
+Defaults:pfhop !requiretty
+pfhop ALL=(root) NOPASSWD: /usr/libexec/pfhop/pfhop-helper

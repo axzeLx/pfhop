@@ -1,0 +1,104 @@
+{% import "macros.html" as ui %}
+{% macro meter(label, percent, detail) -%}
+<div class="meter">
+  <div class="meter-top"><span>{{ label }}</span><span class="val">{{ detail }} · {{ '%.0f' % percent }}%</span></div>
+  <div class="bar {{ level(percent, warn_pct, crit_pct) }}"><span style="width: {{ [percent, 100] | min }}%"></span></div>
+</div>
+{%- endmacro %}
+
+<div class="kpi-row">
+  {# --- Postfix service (narrow) --- #}
+  <section class="card svc">
+    <div class="svc-label">Postfix</div>
+    {% if service.running %}<span class="pill ok big">Running</span>
+    {% elif service.active_state in ('activating', 'reloading', 'deactivating') %}<span class="pill warn big">{{ service.active_state | capitalize }}</span>
+    {% else %}<span class="pill crit big">Stopped</span>{% endif %}
+    <div class="muted small svc-meta" title="{% if service.uptime is not none %}up {{ service.uptime | duration(true) }} · {% endif %}Postfix {{ pf.mail_version or '?' }}">
+      v{{ pf.mail_version or '?' }}
+    </div>
+    {% if user.is_admin %}
+      {% set act = 'stop' if service.running else 'start' %}
+      <form method="post" action="/actions/service/{{ act }}"
+            data-confirm="{{ 'STOP Postfix? No mail will be relayed until it is started again.' if act == 'stop' else 'Start Postfix?' }}">
+        <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="next" value="/">
+        <button class="btn sm {{ 'danger' if act == 'stop' else 'primary' }}" type="submit">{{ act | capitalize }}</button>
+      </form>
+    {% endif %}
+  </section>
+
+  {# --- counters --- #}
+  <a class="card kpi" href="/queue">
+    <div class="kpi-num">{{ queue.counts.active + queue.counts.incoming + queue.counts.maildrop }}</div>
+    <div class="kpi-lbl">Active</div><div class="kpi-sub">in queue now</div>
+  </a>
+  <a class="card kpi {{ 'warn' if queue.counts.deferred }}" href="/queue">
+    <div class="kpi-num">{{ queue.counts.deferred }}</div>
+    <div class="kpi-lbl">Deferred</div><div class="kpi-sub">in queue now</div>
+  </a>
+  <a class="card kpi {{ 'warn' if queue.counts.hold }}" href="/queue">
+    <div class="kpi-num">{{ queue.counts.hold }}</div>
+    <div class="kpi-lbl">Hold</div><div class="kpi-sub">in queue now</div>
+  </a>
+  <a class="card kpi {{ 'crit' if today.bounced }}" href="/logs?status=bounced">
+    <div class="kpi-num">{{ today.bounced }}</div>
+    <div class="kpi-lbl">Bounced</div><div class="kpi-sub">today</div>
+  </a>
+  <a class="card kpi ok" href="/logs?status=sent">
+    <div class="kpi-num">{{ today.sent }}</div>
+    <div class="kpi-lbl">Sent</div><div class="kpi-sub">today</div>
+  </a>
+</div>
+
+<div class="grid grid-3 section-gap">
+  {# --- top senders --- #}
+  <section class="card">
+    <div class="card-head"><h2>Top senders today</h2></div>
+    {% if top_senders %}
+    <table class="dense">
+      <thead><tr><th>#</th><th>Sender</th><th class="right">Mails</th></tr></thead>
+      <tbody>
+      {% for r in top_senders %}
+        <tr><td class="muted">{{ loop.index }}</td>
+            <td class="ellipsis" title="{{ r.sender }}"><a href="/logs?sender={{ r.sender | urlencode }}&date_from={{ today_from }}">{{ ui.addr(r.sender) }}</a></td>
+            <td class="right num">{{ r.messages }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}<p class="muted">No mail today yet.</p>{% endif %}
+  </section>
+
+  {# --- bounces --- #}
+  <section class="card">
+    <div class="card-head"><h2>Bounced today</h2></div>
+    {% if bounces %}
+    <table class="dense">
+      <thead><tr><th>Recipient</th><th class="right">Count</th></tr></thead>
+      <tbody>
+      {% for r in bounces %}
+        <tr><td class="ellipsis" title="{{ r.reason }}"><a href="/logs?recipient={{ r.recipient | urlencode }}&status=bounced">{{ r.recipient }}</a>
+              <div class="muted small ellipsis">{{ r.reason }}</div></td>
+            <td class="right num">{{ r.count }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}<p class="muted">No bounces today. 🎉</p>{% endif %}
+  </section>
+
+  {# --- server (minimal) --- #}
+  <section class="card">
+    <div class="card-head"><h2>Server</h2></div>
+    <dl class="kv compact">
+      <dt>Name</dt><dd>{{ sys.hostname }}</dd>
+      <dt>IP</dt><dd class="mono">{{ sys.ip or '-' }}</dd>
+      <dt>OS</dt><dd>{{ sys.os_name }} {{ sys.os_version }}</dd>
+      <dt>Uptime</dt><dd>{{ sys.uptime | duration(true) }}</dd>
+    </dl>
+    <div style="margin-top:12px">
+      {{ meter('CPU', sys.cpu_percent, sys.cpu_cores ~ ' cores') }}
+      {{ meter('RAM', sys.mem_percent, (sys.mem_used | filesize) ~ ' / ' ~ (sys.mem_total | filesize)) }}
+      {% if queue_disk %}
+      {{ meter('Disk (queue: ' ~ queue_disk.mount ~ ')', queue_disk.percent, (queue_disk.free | filesize) ~ ' free') }}
+      {% endif %}
+    </div>
+  </section>
+</div>

@@ -1,0 +1,46 @@
+{% extends "config_base.html" %}
+{% block config_content %}
+<p class="muted small">All parameters set in main.cf and the services in master.cf. Read-only; use the other tabs to change settings.</p>
+{% if error %}<div class="flash error">{{ error }}</div>{% endif %}
+
+<section class="card" style="margin-bottom:16px">
+  <div class="card-head">
+    <h2>main.cf <span class="muted small">({{ rows | length }} parameters set, <code>postconf -n</code>)</span></h2>
+    <input type="search" placeholder="Filter…" data-filter="#params" style="max-width:240px">
+  </div>
+  <div class="table-wrap">
+    <table id="params">
+      <thead><tr><th>Parameter</th><th>Value</th><th>Default</th></tr></thead>
+      <tbody>
+      {% for r in rows %}
+        <tr class="{{ 'changed' if r.value != r.default }}">
+          <td><code>{{ r.name }}</code>{% if r.desc %}<div class="muted small">{{ r.desc }}</div>{% endif %}</td>
+          <td class="val">{% if r.name == 'mynetworks' %}{% for n in r.value.split() %}{{ n }}<br>{% endfor %}{% else %}{{ r.value or '(empty)' }}{% endif %}</td>
+          <td class="val muted">{{ r.default or '(empty)' }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="card">
+  <div class="card-head">
+    <h2>master.cf <span class="muted small">(<code>postconf -M</code>)</span></h2>
+    <input type="search" placeholder="Filter…" data-filter="#master" style="max-width:240px">
+  </div>
+  <div class="table-wrap">
+    <table id="master">
+      <thead><tr><th>Service</th><th>Type</th><th>Private</th><th>Unpriv</th><th>Chroot</th><th>Wakeup</th><th>Max proc</th><th>Command</th></tr></thead>
+      <tbody>
+      {% for m in master %}
+        <tr>
+          <td><code>{{ m.service }}</code></td><td>{{ m.type }}</td><td>{{ m.private }}</td><td>{{ m.unpriv }}</td>
+          <td>{{ m.chroot }}</td><td>{{ m.wakeup }}</td><td>{{ m.maxproc }}</td><td class="val">{{ m.command }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

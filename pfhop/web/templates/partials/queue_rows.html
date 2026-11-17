@@ -1,0 +1,38 @@
+{% import "macros.html" as ui %}
+{% set next_url = '/queue' if full else '/' %}
+{% for r in qrows %}
+{% set m = r.m %}
+<tr data-status="{{ m.queue_name }}">
+  {% if full and user.is_admin %}<td><input type="checkbox" class="qsel" name="id" value="{{ m.queue_id }}" form="bulk" aria-label="select {{ m.queue_id }}"></td>{% endif %}
+  <td class="mono"><a href="/logs?q={{ m.queue_id }}" title="Show log entries">{{ m.queue_id }}</a></td>
+  <td>{{ ui.status_pill(m.queue_name) }}</td>
+  <td class="nowrap">{{ m.arrival_time | ts('%d.%m %H:%M:%S') }}
+    <div><span class="age {{ r.age_level }}">{{ m.age | duration(true) }}</span></div></td>
+  <td class="right nowrap">{{ m.size | filesize }}</td>
+  <td class="ellipsis" title="{{ m.sender }}">{{ ui.addr(m.sender) }}
+    {% if r.meta.client_ip %}<div class="muted small">{{ r.meta.client_ip }}{% if r.meta.client_host and r.meta.client_host not in ('unknown', '_gateway') %} · {{ r.meta.client_host }}{% endif %}</div>{% endif %}</td>
+  <td class="ellipsis" title="{{ m.recipients | map(attribute='address') | join(', ') }}">
+    {{ m.recipients[0].address if m.recipients else '-' }}
+    {% if m.recipients | length > 1 %}<span class="tag">+{{ m.recipients | length - 1 }}</span>{% endif %}</td>
+  {% set rl = ridx.predict(m.sender, r.meta.client_ip) %}
+  <td class="nowrap small" title="{{ 'Expected route: ' ~ rl.name ~ (' (' ~ rl.host ~ ')' if rl.host else '') if rl else 'no relay (direct delivery)' }}">{% if rl %}<span class="relay-name">{{ rl.name }}</span>{% else %}<span class="muted">direct</span>{% endif %}</td>
+  <td class="reason">{% if m.delay_reason %}<div class="clamp" data-key="q-{{ m.queue_id }}" title="Click to show / hide the full text">{{ m.delay_reason }}</div>{% else %}<span class="muted">-</span>{% endif %}</td>
+  {% if user.is_admin %}
+  <td class="right nowrap">
+    <div class="iconrow">
+      {{ ui.qbtn('retry', m.queue_id, 'Send now', 'play', csrf, next_url, 'go') }}
+      {% if full %}
+        {% if m.queue_name == 'hold' %}
+          {{ ui.qbtn('release', m.queue_id, 'Release from hold', 'release', csrf, next_url) }}
+        {% else %}
+          {{ ui.qbtn('hold', m.queue_id, 'Put on hold', 'pause', csrf, next_url) }}
+        {% endif %}
+      {% endif %}
+      {{ ui.qbtn('delete', m.queue_id, 'Delete', 'trash', csrf, next_url, 'del', 'Delete message ' ~ m.queue_id ~ ' from ' ~ (m.sender or '<>') ~ '? This cannot be undone.') }}
+    </div>
+  </td>
+  {% endif %}
+</tr>
+{% else %}
+<tr><td colspan="10" class="empty">{% if queue.error %}Could not read the queue: {{ queue.error }}{% else %}✓ The queue is empty.{% endif %}</td></tr>
+{% endfor %}

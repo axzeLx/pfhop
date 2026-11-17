@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Audit log{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Audit log</h1>
+  <form method="get" action="/audit" class="inline-form">
+    <input type="search" name="q" value="{{ q }}" placeholder="Search user, action, IP…">
+    <button class="btn" type="submit">Search</button>
+  </form>
+</div>
+{% if not settings['audit.enabled'] %}
+<div class="notice">Audit logging is currently <strong>disabled</strong>. New actions are not recorded. Enable it in <a href="/settings">Settings</a>.</div>
+{% endif %}
+<section class="card">
+  {% if rows %}
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Time</th><th>User</th><th>IP</th><th>Action</th><th>Target</th><th>Details</th><th>Result</th></tr></thead>
+      <tbody>
+      {% for r in rows %}
+        <tr>
+          <td class="nowrap">{{ r.ts | ts }}</td>
+          <td>{{ r.username }}</td>
+          <td class="mono small">{{ r.client_ip }}</td>
+          <td><code>{{ r.action }}</code></td>
+          <td class="mono small">{{ r.target }}</td>
+          <td class="small">{{ r.details }}</td>
+          <td>{% if r.success %}<span class="pill ok">ok</span>{% else %}<span class="pill crit">failed</span>{% endif %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="muted small">Showing the latest {{ rows | length }} entries (max 500).</p>
+  {% else %}
+  <p class="muted">No entries.</p>
+  {% endif %}
+</section>
+{% endblock %}
